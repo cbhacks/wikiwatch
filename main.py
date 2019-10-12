@@ -229,3 +229,6 @@ def handle_revision(wiki, pageid, revid):
         'timestamp': revision['timestamp'],
         'comment': revision['comment']
     })
+
+if __name__ == "__main__":
+    lambda_handler(None, None)
