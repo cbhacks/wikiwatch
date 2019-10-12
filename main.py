@@ -24,6 +24,9 @@ def get_config():
     )
     return yaml.safe_load(r['Body'].read().decode())
 
+class WikiError(Exception):
+    pass
+
 def mwapi_query(endpoint, params):
     """Runs a 'query' request against the given MediaWiki API endpoint."""
 
@@ -50,11 +53,11 @@ def mwapi_query(endpoint, params):
         # Abort on any errors returned. Errors may still pass raise_for_status
         # because they can be returned in the JSON response even for HTTP 200.
         if 'error' in j:
-            raise Error(j['error'])
+            raise WikiError(j['error'])
 
         # FIXME - unsure what this does. described on MediaWiki's API page
         if 'warnings' in j:
-            raise Error('mediawiki api warning')
+            raise WikiError(j['warnings'])
 
         # Yield the query result, or this portion of it at least.
         if 'query' in j:
