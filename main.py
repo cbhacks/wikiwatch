@@ -196,6 +196,8 @@ def handle_revision(wiki, pageid, revid):
     need_content = not s3_key_for_revision_content_exists(wiki, pageid, revid)
     if need_content:
         req_params['rvprop'] += '|content'
+        if 'slots' in wiki:
+            req_params['rvslots'] = wiki['slots']
     result = next(mwapi_query(
         wiki['api'],
         req_params
@@ -219,8 +221,14 @@ def handle_revision(wiki, pageid, revid):
     assert 'timestamp' in revision
     assert 'comment' in revision
     if need_content:
-        assert '*' in revision
-        s3_put_revision_content(wiki, pageid, revid, revision['*'])
+        if 'slots' in wiki:
+            assert 'main' in revision['slots']
+            assert '*' in revision['slots']['main']
+            content = revision['slots']['main']['*']
+        else:
+            assert '*' in revision
+            content = revision['*']
+        s3_put_revision_content(wiki, pageid, revid, content)
     handle_revision(wiki, pageid, revision['parentid'])
     s3_put_revision_metadata(wiki, pageid, revid, {
         'pageid': page['pageid'],
